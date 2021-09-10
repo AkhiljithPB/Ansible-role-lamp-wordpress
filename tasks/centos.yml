@@ -1,0 +1,88 @@
+---
+
+- name: " Task-01: Installing Apache webserver"
+  yum:
+    name: httpd
+    state: present
+  notify:
+    - restart-httpd
+
+- name: " Task-02: custom httpd config file for httpd"
+  template:
+    src: httpd.conf.temp
+    dest: /etc/httpd/conf/httpd.conf
+  notify:
+    - restart-httpd
+
+- name: " Task-03:Creating Virtualhost from template"
+  template:
+    src: virtualhost.conf.tmp
+    dest: "/etc/httpd/conf.d/{{ domain_name }}.conf"
+  notify:
+    - restart-httpd
+
+- name: "Task-04:DocumentRoot Creation"
+  file:
+    path: "/var/www/{{ domain_name }}"
+    state: directory
+    owner: "{{ httpd_user }}"
+    group: "{{ httpd_group }}"
+
+- name: "Task-05:Installing yum-utils & enable epel repository for remirepo to install latest php"
+  yum:
+    state: present
+    name:
+      - epel-release
+      - http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+
+- name: "Task-06:Enable remi-php74"
+  shell: yum-config-manager --enable remi-php74
+
+- name: "Task-07:Installing php74"
+  yum:
+    state: present
+    name:
+      - php
+      - php-mysql
+      - php-common
+  notify:
+    - restart-httpd
+
+- name: "Task-08:Adding mariadb repo for installing latest version"
+  yum_repository:
+    name: mariadb
+    description: "MariaDB"
+    file: mariadb
+    baseurl: http://yum.mariadb.org/10.3/centos7-amd64
+    gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    gpgcheck: yes
+
+- name: "Task-09:Installing mariadb"
+  yum:
+    name:
+      - mariadb-server
+      - MySQL-python
+    state: present
+
+- name: "Task-10:Restarting/enabling mysql"
+  service:
+    name: mariadb
+    state: restarted
+    enabled: true
+
+- name: "Task-11:mariadb - Setting RootPassword"
+  ignore_errors: true
+  mysql_user:
+    login_user: "root"
+    login_password: ""
+    user: "root"
+    password: "{{ root }}"
+    host_all: true
+
+- name: "Task-12:mariadb - Removing Anonymous Users"
+  mysql_user:
+    login_user: "root"
+    login_password: "{{ root }}"
+    user: ""
+    state: absent
+    host_all: true

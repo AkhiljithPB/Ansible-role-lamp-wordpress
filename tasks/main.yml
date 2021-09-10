@@ -1,0 +1,11 @@
+---
+# tasks file for lamp
+- name: "centos"
+  when: ansible_distribution == "CentOS"
+  import_tasks: centos.yml
+- name: "amazon"
+  when: ansible_distribution == "Amazon"
+  import_tasks: amazon.yml
+
+- name: "wordpress"
+  import_tasks: wordpress.yml

@@ -1,0 +1,35 @@
+---
+
+- name: "Creating database for website"
+  mysql_db:
+    login_user: "root"
+    login_password: "{{ root }}"
+    name: "{{ wp_database }}"
+    state: present
+
+- name: "Creating User"
+  mysql_user:
+    login_user: "root"
+    login_password: "{{ root }}"
+    name: "{{ mysql_user }}"
+    password: "{{ wp_password }}"
+    priv: '{{ wp_database }}.*:ALL'
+
+- name: "Downloading tar File"
+  get_url:
+    url: https://wordpress.org/wordpress-5.8.tar.gz
+    dest: /usr/local/src/wordpress.tar.gz
+
+- name: "Extracting files"
+  unarchive:
+    src: /usr/local/src/wordpress.tar.gz
+    dest: /usr/local/src/
+    remote_src: true
+
+- name: "Copying wordpress files To document-root"
+  copy:
+    src: /usr/local/src/wordpress/
+    dest: /var/www/{{ domain_name }}/
+    remote_src: true
+    owner: "{{ httpd_user }}"
+    group: "{{ httpd_group }}"

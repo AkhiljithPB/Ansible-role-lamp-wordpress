@@ -1,0 +1,11 @@
+---
+httpd_port: 80
+httpd_user: "apache"
+httpd_group: "apache"
+
+domain_name: "sample.techhouse.tk"
+
+root: "root@123"
+mysql_user: "wp-user"
+wp_password: "password"
+wp_database: "word-press"
